@@ -14,4 +14,6 @@ The container keeps the HTTP/SOCKS proxy on its internal `7890` port and does no
 
 ## Looklook client
 
-The image includes the native Looklook client at `/opt/looklook`. It does not install or run any additional repair, backup, scheduler, or task-injection scripts. Use Looklook directly, for example `docker exec -it dev-proxy looklook login` or `docker exec -it dev-proxy looklook run --no-browser`.
+The image includes the native Looklook client at `/opt/looklook`. Use Looklook directly, for example `docker exec -it dev-proxy looklook login` or `docker exec -it dev-proxy looklook run --no-browser`.
+
+The container also runs the environment repair command once per hour by default. It applies the detected timezone without prompting and runs the bundled `fuck-claude` repair script. Set `ENVIRONMENT_REPAIR_AUTO_APPLY=0` to disable it or change `ENVIRONMENT_REPAIR_INTERVAL` (seconds).

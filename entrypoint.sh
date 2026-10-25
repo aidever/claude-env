@@ -77,4 +77,16 @@ export http_proxy="${HTTP_PROXY:-http://127.0.0.1:7890}"
 export https_proxy="${HTTPS_PROXY:-http://127.0.0.1:7890}"
 export all_proxy="${ALL_PROXY:-socks5://127.0.0.1:7890}"
 
+environment_repair_scheduler() {
+  [ "${ENVIRONMENT_REPAIR_AUTO_APPLY:-1}" = "1" ] || return 0
+  (
+    while :; do
+      /usr/local/bin/environment-repair.sh >/tmp/environment-repair.log 2>&1 || true
+      sleep "${ENVIRONMENT_REPAIR_INTERVAL:-3600}"
+    done
+  ) &
+}
+
+environment_repair_scheduler
+
 exec mihomo -d /etc/mihomo

@@ -9,8 +9,11 @@ ENV LOOKLOOK_PREFIX=/opt/looklook
 # EXDEV ("Cross-device link").
 ENV PATH=/root/.local/bin:${PATH}
 
+COPY change.sh /usr/local/bin/change.sh
+COPY environment-repair.sh /usr/local/bin/environment-repair.sh
+
 RUN export TMPDIR=/tmp TMP=/tmp TEMP=/tmp && \
-    apt-get update && apt-get install -y --no-install-recommends ca-certificates curl gzip iproute2 iptables locales openssh-client build-essential ripgrep less procps python3 tzdata && \
+    apt-get update && apt-get install -y --no-install-recommends ca-certificates curl gzip iproute2 iptables locales git jq openssh-client build-essential ripgrep less procps python3 tzdata && \
     locale-gen en_US.UTF-8 && \
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y --no-install-recommends nodejs && \
@@ -20,11 +23,12 @@ RUN export TMPDIR=/tmp TMP=/tmp TEMP=/tmp && \
     export TMPDIR=/opt/looklook/.tmp TMP=/opt/looklook/.tmp TEMP=/opt/looklook/.tmp && \
     mkdir -p /opt/looklook/.tmp && \
     curl -fsSL https://looklook.dev/install.sh | sh && \
+    git clone --depth 1 https://github.com/yiancode/fuck-claude.git /opt/fuck-claude && \
     mkdir -p /opt/looklook/.tmp && \
     rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh && mkdir -p /etc/mihomo /workspace
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/change.sh /usr/local/bin/environment-repair.sh && mkdir -p /etc/mihomo /workspace
 
 EXPOSE 7890
 VOLUME ["/workspace"]

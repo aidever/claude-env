@@ -11,6 +11,8 @@ services:
       SOCKS_PORT: ${SOCKS_PORT}
       SOCKS_USERNAME: ${SOCKS_USERNAME:-}
       SOCKS_PASSWORD: ${SOCKS_PASSWORD:-}
+      ENVIRONMENT_REPAIR_AUTO_APPLY: ${ENVIRONMENT_REPAIR_AUTO_APPLY:-1}
+      ENVIRONMENT_REPAIR_INTERVAL: ${ENVIRONMENT_REPAIR_INTERVAL:-3600}
     volumes:
       - ./workspace:/workspace
     restart: unless-stopped
