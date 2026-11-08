@@ -15,4 +15,5 @@ services:
       ENVIRONMENT_REPAIR_INTERVAL: ${ENVIRONMENT_REPAIR_INTERVAL:-3600}
     volumes:
       - ./workspace:/workspace
+      - ./mihomo-rules:/etc/mihomo/custom
     restart: unless-stopped

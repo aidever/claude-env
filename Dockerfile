@@ -28,7 +28,8 @@ RUN export TMPDIR=/tmp TMP=/tmp TEMP=/tmp && \
     rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/change.sh /usr/local/bin/environment-repair.sh && mkdir -p /etc/mihomo /workspace
+COPY mihomo-reload.sh /usr/local/bin/mihomo-reload
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/mihomo-reload /usr/local/bin/change.sh /usr/local/bin/environment-repair.sh && mkdir -p /etc/mihomo/custom /workspace
 
 EXPOSE 7890
 VOLUME ["/workspace"]

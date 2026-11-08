@@ -17,3 +17,7 @@ The container keeps the HTTP/SOCKS proxy on its internal `7890` port and does no
 The image includes the native Looklook client at `/opt/looklook`. Use Looklook directly, for example `docker exec -it dev-proxy looklook login` or `docker exec -it dev-proxy looklook run --no-browser`.
 
 The container also runs the environment repair command once per hour by default. It applies the detected timezone without prompting and runs the bundled `fuck-claude` repair script. Set `ENVIRONMENT_REPAIR_AUTO_APPLY=0` to disable it or change `ENVIRONMENT_REPAIR_INTERVAL` (seconds).
+
+## Proxy rules
+
+All Looklook services (`*.looklook.dev` and relay IPs) connect directly instead of through the upstream proxy. To add your own rules, edit `/etc/mihomo/custom/direct.txt` (direct) or `/etc/mihomo/custom/proxy.txt` (via upstream), one Mihomo rule per line without a policy, e.g. `DOMAIN-SUFFIX,example.com`. The included Compose file mounts `./mihomo-rules` there so edits survive container recreation. Apply changes without restarting: `docker exec dev-proxy mihomo-reload`.

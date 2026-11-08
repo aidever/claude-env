@@ -10,12 +10,27 @@ export TMP="$TMPDIR"
 export TEMP="$TMPDIR"
 mkdir -p "$TMPDIR"
 
+# User-editable rule files. Mount /etc/mihomo/custom from the host to keep them,
+# then run `mihomo-reload` to apply edits without restarting the container.
+CUSTOM_RULES_DIR=/etc/mihomo/custom
+mkdir -p "$CUSTOM_RULES_DIR"
+[ -f "$CUSTOM_RULES_DIR/direct.txt" ] || cat > "$CUSTOM_RULES_DIR/direct.txt" <<'RULES'
+# 直连规则：每行一条，不写策略。例如：
+# DOMAIN-SUFFIX,example.com
+# IP-CIDR,1.2.3.4/32,no-resolve
+RULES
+[ -f "$CUSTOM_RULES_DIR/proxy.txt" ] || cat > "$CUSTOM_RULES_DIR/proxy.txt" <<'RULES'
+# 走家宽代理的规则：每行一条，不写策略。例如：
+# DOMAIN-SUFFIX,example.org
+RULES
+
 cat > /etc/mihomo/config.yaml <<EOF
 mixed-port: 7890
 allow-lan: false
 mode: rule
 log-level: info
 ipv6: false
+external-controller: 127.0.0.1:9090
 proxies:
   - name: upstream
     type: socks5
@@ -46,6 +61,8 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-filter:
     - 4.kleeclub.top
+    # Looklook 返回真实 IP，保证按 IP 直连的 UDP/STUN 流量也能命中规则
+    - '+.looklook.dev'
     - '*.lan'
     - '*.local'
   fake-ip-range: 198.18.0.1/16
@@ -59,9 +76,24 @@ dns:
   nameserver:
     - 'https://1.1.1.1/dns-query#upstream'
     - 'https://8.8.8.8/dns-query#upstream'
+rule-providers:
+  custom-direct:
+    type: file
+    behavior: classical
+    format: text
+    path: ${CUSTOM_RULES_DIR}/direct.txt
+  custom-proxy:
+    type: file
+    behavior: classical
+    format: text
+    path: ${CUSTOM_RULES_DIR}/proxy.txt
 rules:
+  # 用户自定义规则优先，见 /etc/mihomo/custom/*.txt
+  - RULE-SET,custom-direct,DIRECT
+  - RULE-SET,custom-proxy,GLOBAL
   - DOMAIN,4.kleeclub.top,DIRECT
-  # Looklook 全部域名直连，避免登录和远程终端被上游节点代理
+  # Looklook 服务全部直连：网站/API、中继（TCP 2333、STUN/TURN 3478）
+  - DOMAIN,r3.looklook.dev,DIRECT
   - DOMAIN-SUFFIX,looklook.dev,DIRECT
   - IP-CIDR,154.219.107.44/32,DIRECT,no-resolve
   - IP-CIDR,47.108.195.230/32,DIRECT,no-resolve
