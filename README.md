@@ -20,4 +20,4 @@ The container also runs the environment repair command once per hour by default.
 
 ## Proxy rules
 
-All Looklook services (`*.looklook.dev` and relay IPs) connect directly instead of through the upstream proxy. To add your own rules, edit `/etc/mihomo/custom/direct.txt` (direct) or `/etc/mihomo/custom/proxy.txt` (via upstream), one Mihomo rule per line without a policy, e.g. `DOMAIN-SUFFIX,example.com`. The included Compose file mounts `./mihomo-rules` there so edits survive container recreation. Apply changes without restarting: `docker exec dev-proxy mihomo-reload`.
+All Looklook services (`*.looklook.dev`, relay IPs, and all UDP from the `looklook` process) connect directly instead of through the upstream proxy. To add your own rules, edit `/etc/mihomo/custom/direct.txt` (direct) or `/etc/mihomo/custom/proxy.txt` (via upstream), one Mihomo rule per line without a policy, e.g. `DOMAIN-SUFFIX,example.com`. The included Compose file mounts `./mihomo-rules` there so edits survive container recreation. Apply changes without restarting: `docker exec dev-proxy mihomo-reload`.

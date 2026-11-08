@@ -97,6 +97,8 @@ rules:
   - DOMAIN-SUFFIX,looklook.dev,DIRECT
   - IP-CIDR,154.219.107.44/32,DIRECT,no-resolve
   - IP-CIDR,47.108.195.230/32,DIRECT,no-resolve
+  # Looklook 进程的 UDP（WebRTC 点对点、STUN/TURN）全部直连；TCP 不按进程放行，避免它访问 Anthropic 时用真实 IP
+  - AND,((PROCESS-NAME,looklook),(NETWORK,UDP)),DIRECT
   - DOMAIN-SUFFIX,lan,DIRECT
   - DOMAIN-SUFFIX,local,DIRECT
   - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
