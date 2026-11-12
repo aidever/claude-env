@@ -56,7 +56,7 @@ tun:
   mtu: 1500
 dns:
   enable: true
-  listen: 127.0.0.1:1053
+  listen: 0.0.0.0:53
   ipv6: false
   enhanced-mode: fake-ip
   fake-ip-filter:
@@ -66,16 +66,16 @@ dns:
     - '*.lan'
     - '*.local'
   fake-ip-range: 198.18.0.1/16
-  respect-rules: true
   default-nameserver:
-    - 8.8.8.8
-    - 1.1.1.1
+    - 223.5.5.5
+    - 119.29.29.29
   proxy-server-nameserver:
-    - 8.8.8.8
-    - 1.1.1.1
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver-policy:
+    '+.looklook.dev': ['223.5.5.5', '119.29.29.29']
   nameserver:
-    - 'https://1.1.1.1/dns-query#upstream'
-    - 'https://8.8.8.8/dns-query#upstream'
+    - 223.5.5.5 # 用国内 DNS 兜底，避免代理未通时所有解析瘫痪
 rule-providers:
   custom-direct:
     type: file

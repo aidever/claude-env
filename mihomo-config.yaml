@@ -2,20 +2,23 @@ mode: "rule"
 log-level: "info"
 ipv6: false
 allow-lan: false
+
 proxies:
   - name: "proxy"
     type: "socks5"
-    server: "4.kleeclub.top"
+    server: "host.docker.internal"
     port: 13579
-    # Fill these locally if your SOCKS5 server requires authentication.
+    # 如需要 SOCKS5 认证，请填写账号密码
     username: "<SOCKS_USERNAME>"
     password: "<SOCKS_PASSWORD>"
     udp: true
+
 proxy-groups:
-  - name: "GLOBAL"
+  - name: "PROXY"
     type: "select"
     proxies:
       - "proxy"
+
 tun:
   enable: true
   device: "mihomo0"
@@ -27,40 +30,48 @@ tun:
     - "any:53"
     - "tcp://any:53"
   mtu: 1500
+
 dns:
   enable: true
-  listen: "127.0.0.1:1053"
+  listen: "0.0.0.0:53" # 改为标准 53 端口，方便容器内直接调用
   ipv6: false
   enhanced-mode: "fake-ip"
+  fake-ip-range: "198.18.0.1/16"
   fake-ip-filter:
-    - "4.kleeclub.top"
+    - "+.looklook.dev"
     - "*.lan"
     - "*.local"
-  fake-ip-range: "198.18.0.1/16"
-  respect-rules: true
   default-nameserver:
-    - "8.8.8.8"
-    - "1.1.1.1"
+    - "223.5.5.5"
+    - "119.29.29.29"
   proxy-server-nameserver:
-    - "8.8.8.8"
-    - "1.1.1.1"
+    - "223.5.5.5"
+    - "119.29.29.29"
+  nameserver-policy:
+    "+.looklook.dev": ["223.5.5.5", "119.29.29.29"]
   nameserver:
-    - "https://1.1.1.1/dns-query#proxy"
-    - "https://8.8.8.8/dns-query#proxy"
+    - "223.5.5.5" # 用国内 DNS 兜底，避免代理未通时所有解析瘫痪
+
 rules:
-  - "DOMAIN,4.kleeclub.top,DIRECT"
+  # 代理节点与域名直连规则
   - "DOMAIN-SUFFIX,looklook.dev,DIRECT"
-  - "IP-CIDR,154.219.107.44/32,DIRECT,no-resolve"
-  - "IP-CIDR,47.108.195.230/32,DIRECT,no-resolve"
   - "DOMAIN-SUFFIX,lan,DIRECT"
   - "DOMAIN-SUFFIX,local,DIRECT"
-  - "IP-CIDR,10.0.0.0/8,DIRECT"
-  - "IP-CIDR,172.16.0.0/12,DIRECT"
-  - "IP-CIDR,192.168.0.0/16,DIRECT"
-  - "IP-CIDR,127.0.0.0/8,DIRECT"
-  - "IP-CIDR,169.254.0.0/16,DIRECT"
-  - "IP-CIDR,100.64.0.0/10,DIRECT"
-  - "IP-CIDR6,::1/128,DIRECT"
-  - "IP-CIDR6,fc00::/7,DIRECT"
-  - "IP-CIDR6,fe80::/10,DIRECT"
-  - "MATCH,GLOBAL"
+  
+  # 指定 IP 直连规则（加上 no-resolve 防止触发多余 DNS 解析）
+  - "IP-CIDR,154.219.107.44/32,DIRECT,no-resolve"
+  - "IP-CIDR,47.108.195.230/32,DIRECT,no-resolve"
+  
+  # 局域网与保留地址直连
+  - "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve"
+  - "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve"
+  - "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve"
+  - "IP-CIDR,127.0.0.0/8,DIRECT,no-resolve"
+  - "IP-CIDR,169.254.0.0/16,DIRECT,no-resolve"
+  - "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve"
+  - "IP-CIDR6,::1/128,DIRECT,no-resolve"
+  - "IP-CIDR6,fc00::/7,DIRECT,no-resolve"
+  - "IP-CIDR6,fe80::/10,DIRECT,no-resolve"
+  
+  # 最终兜底走代理策略组
+  - "MATCH,PROXY"
