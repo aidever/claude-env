@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>claude-env 面板</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2300a676'/><path d='M9 11l6 5-6 5M17 22h7' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<style>
+:root{
+  --bg:#f4f7f6;--card:#fff;--text:#15231e;--muted:#5f746c;--line:#e1e9e5;
+  --brand:#00a676;--brand-ink:#fff;--brand-soft:#e3f6ef;
+  --ok:#0f9d58;--warn:#c27c00;--bad:#d93a3f;--ok-soft:#e5f5ec;--warn-soft:#fdf3e1;--bad-soft:#fdeaea;
+  --code:#0f1a16;--code-text:#d7efe5;
+  --radius:14px;--shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e1412;--card:#161e1b;--text:#e3eeea;--muted:#8fa69d;--line:#26332e;
+  --brand:#19c08c;--brand-ink:#04140e;--brand-soft:#123329;
+  --ok:#3ccf87;--warn:#e9a93a;--bad:#ff6b6f;--ok-soft:#12301f;--warn-soft:#33270f;--bad-soft:#3a1617;
+  --code:#080c0b;--shadow:none;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+a{color:var(--brand)}
+header{display:flex;align-items:center;gap:12px;padding:18px 24px;max-width:1120px;margin:0 auto}
+header .logo{width:36px;height:36px;border-radius:10px;background:var(--brand);display:grid;place-items:center;color:#fff;font-weight:700}
+header h1{font-size:18px;margin:0}
+header .sub{color:var(--muted);font-size:13px;word-break:break-all}
+header button{white-space:nowrap}
+header>div:nth-child(2){flex:1;min-width:0}
+@media (max-width:560px){header{flex-wrap:wrap}header .spacer{display:none}header button{width:100%}}
+header .spacer{flex:1}
+main{max-width:1120px;margin:0 auto;padding:0 24px 48px;display:grid;align-items:start;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;grid-column:span 12;min-width:0}
+.half{grid-column:span 6}
+@media (max-width:860px){.half{grid-column:span 12}main{padding:0 16px 40px}header{padding:16px}}
+.card h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.card .desc{color:var(--muted);font-size:13px;margin:0 0 16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:8px 16px;cursor:pointer;transition:.15s}
+button:hover:not(:disabled){border-color:var(--brand);color:var(--brand)}
+button.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);font-weight:600}
+button.primary:hover:not(:disabled){filter:brightness(1.08);color:var(--brand-ink)}
+button.danger:hover:not(:disabled){border-color:var(--bad);color:var(--bad)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.link{border:none;background:none;padding:0;color:var(--brand)}
+input,textarea{font:inherit;width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text)}
+input:focus,textarea:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;min-height:200px;resize:vertical}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.grid,.grid2{grid-template-columns:1fr}}
+.check{display:flex;align-items:center;gap:8px;color:var(--text);font-size:14px;margin:0}
+.check input{width:auto}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:3px 10px;border-radius:999px;background:var(--line);color:var(--muted);white-space:nowrap}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.steps{grid-template-columns:1fr 1fr}}
+.step{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.step .n{font-size:12px;color:var(--muted)}
+.step .t{font-weight:600}
+.step .s{font-size:13px;color:var(--muted);min-height:20px}
+.msg{font-size:13px;margin-top:10px;padding:8px 12px;border-radius:10px;display:none;white-space:pre-wrap;word-break:break-all}
+.msg.show{display:block}.msg.ok{background:var(--ok-soft);color:var(--ok)}.msg.bad{background:var(--bad-soft);color:var(--bad)}.msg.info{background:var(--brand-soft);color:var(--text)}
+pre.console{background:var(--code);color:var(--code-text);border-radius:10px;padding:14px;font:12.5px/1.45 ui-monospace,Menlo,Consolas,monospace;max-height:420px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:0}
+.hero{background:linear-gradient(135deg,var(--brand-soft),var(--card) 70%)}
+.hero .big{font-size:20px;font-weight:700;margin:2px 0 6px}
+.hero ul{margin:8px 0 16px;padding-left:20px;color:var(--muted);font-size:14px}
+.addr{font:600 16px ui-monospace,Menlo,Consolas,monospace;padding:10px 14px;border-radius:10px;background:var(--card);border:1px dashed var(--brand);display:inline-block;word-break:break-all}
+.tabs{display:flex;gap:4px;margin-bottom:10px}
+.tabs button{border-radius:8px;padding:5px 12px;font-size:13px}
+.tabs button.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand)}
+.results{display:grid;gap:6px;margin-top:12px;font-size:14px}
+.results div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.muted{color:var(--muted);font-size:13px}
+.banner{grid-column:span 12;border-radius:var(--radius);padding:14px 18px;background:var(--bad-soft);color:var(--bad);display:none}
+.banner.show{display:block}
+.banner a{color:inherit;font-weight:600}
+dialog{border:none;border-radius:var(--radius);padding:0;width:min(1000px,96vw);background:var(--card);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog .head{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+dialog .head h3{margin:0;font-size:16px;flex:1}
+dialog .body{padding:16px 20px}
+dialog .foot{padding:12px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+.spin{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:s 0.8s linear infinite;display:inline-block}
+@keyframes s{to{transform:rotate(360deg)}}
+#jobOut{white-space:pre;word-break:normal;max-height:65vh}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">&gt;_</div>
+  <div>
+    <h1>claude-env 面板</h1>
+    <div class="sub" id="projectDir">正在连接…</div>
+  </div>
+  <div class="spacer"></div>
+  <button onclick="openFolder('workspace')" title="容器里的 /workspace 就是这个文件夹">📂 打开代码文件夹</button>
+</header>
+
+<main>
+  <div class="banner" id="dockerBanner"></div>
+
+  <!-- 总览 -->
+  <section class="card">
+    <h2>状态总览</h2>
+    <p class="desc">按 1 → 4 的顺序走一遍，就能在手机或任何浏览器上写代码。</p>
+    <div class="steps">
+      <div class="step"><span class="n">第 1 步</span><span class="t">Docker</span><span class="s" id="stDocker">检测中…</span></div>
+      <div class="step"><span class="n">第 2 步</span><span class="t">代理设置</span><span class="s" id="stConfig">检测中…</span></div>
+      <div class="step"><span class="n">第 3 步</span><span class="t">开发容器</span><span class="s" id="stContainer">检测中…</span></div>
+      <div class="step"><span class="n">第 4 步</span><span class="t">Looklook 远程</span><span class="s" id="stLooklook">检测中…</span></div>
+    </div>
+  </section>
+
+  <!-- Looklook -->
+  <section class="card hero" id="looklookCard">
+    <h2>📱 随时随地写代码 · Looklook</h2>
+    <div id="llBody">
+      <div class="big">不用公网 IP，手机 / 平板 / 任意浏览器都能打开这台电脑上的 Claude Code</div>
+      <ul>
+        <li>Looklook 自动穿透内网，不需要路由器端口映射、不需要买云服务器</li>
+        <li>在地铁上用手机看 Claude 跑任务，回家在电脑上接着干，终端任务不中断</li>
+        <li>登录只需扫码 / 在手机上点「批准」</li>
+      </ul>
+      <div class="muted">先完成上面的第 1-3 步，这里会显示 Looklook 的状态和访问地址。</div>
+    </div>
+  </section>
+
+  <!-- 代理 -->
+  <section class="card half">
+    <h2>🌐 代理设置</h2>
+    <p class="desc">容器里的所有流量（Claude、Codex、npm…）都会走这个 SOCKS5 代理；Looklook 自动直连。</p>
+    <div class="grid">
+      <div><label>代理服务器地址</label><input id="cfServer" placeholder="例如 1.2.3.4 或 host.docker.internal"></div>
+      <div><label>端口</label><input id="cfPort" inputmode="numeric" placeholder="例如 1080"></div>
+    </div>
+    <div class="grid2" style="margin-top:12px">
+      <div><label>用户名（没有就留空）</label><input id="cfUser" autocomplete="off"></div>
+      <div><label>密码（没有就留空）</label><input id="cfPass" type="password" autocomplete="new-password"></div>
+    </div>
+    <details style="margin-top:12px">
+      <summary>代理软件开在这台电脑上？</summary>
+      <p class="muted">地址填 <code>host.docker.internal</code>，端口填代理软件的 SOCKS5 端口（Clash 系列通常是 7890 或 7891），并在代理软件里打开「允许局域网连接 / Allow LAN」。</p>
+    </details>
+    <details style="margin-top:6px">
+      <summary>高级选项</summary>
+      <div style="display:grid;gap:10px;margin-top:10px">
+        <label class="check"><input type="checkbox" id="cfRepair"> 定时自动环境修复</label>
+        <div class="row"><span class="muted">每隔</span><input id="cfInterval" style="width:90px" inputmode="numeric"><span class="muted">分钟</span></div>
+        <label class="check"><input type="checkbox" id="cfLL"> 容器启动时自动启动 Looklook</label>
+      </div>
+    </details>
+    <div class="row" style="margin-top:16px">
+      <button onclick="testProxy()" id="btnTest">测试连接</button>
+      <button class="primary" onclick="saveConfig()" id="btnSave">保存并应用</button>
+    </div>
+    <div class="msg" id="cfMsg"></div>
+  </section>
+
+  <!-- 容器 -->
+  <section class="card half">
+    <h2>📦 开发容器 <span class="pill" id="ctPill">未知</span></h2>
+    <p class="desc" id="ctDesc">容器里预装了 Node.js、Claude Code、Codex 和 Looklook。</p>
+    <div class="row">
+      <button class="primary" id="btnStart" onclick="containerAction('start')">▶ 启动</button>
+      <button id="btnRestart" onclick="containerAction('restart')">↻ 重启</button>
+      <button class="danger" id="btnStop" onclick="containerAction('stop')">■ 停止</button>
+      <button id="btnUpdate" onclick="confirmAct('更新会下载最新镜像并重建容器。\n/workspace 里的代码、分流规则和 Looklook 登录状态都会保留。\n\n继续吗？', ()=>containerAction('update'))">⬆ 更新</button>
+    </div>
+    <div style="margin-top:16px">
+      <div class="row" style="justify-content:space-between">
+        <strong style="font-size:14px">网络检测</strong>
+        <button onclick="networkCheck()" id="btnNet">检测</button>
+      </div>
+      <div class="muted">在容器内同时请求 ip.me 等多个站点，最快返回的作为结果：能拿到 IP 就说明网络已通，这个 IP 就是代理出口。</div>
+      <div class="results" id="netResults"></div>
+    </div>
+  </section>
+
+  <!-- IP 质量 -->
+  <section class="card half">
+    <h2>🔎 IP 质量检测</h2>
+    <p class="desc">在容器里运行 <a href="https://github.com/xykt/IPQuality" target="_blank" rel="noopener">xykt/IPQuality</a>，检测代理出口 IP 的类型、风险评分、流媒体和 AI 服务解锁情况。首次运行会自动安装依赖，需要 1-3 分钟。</p>
+    <button class="primary" onclick="ipQuality()" id="btnIPQ">开始检测</button>
+    <div class="muted" style="margin-top:10px" id="ipqHint"></div>
+  </section>
+
+  <!-- 规则 -->
+  <section class="card half">
+    <h2>🔀 分流规则</h2>
+    <p class="desc">一行一条 Mihomo 规则，不写策略，例如 <code>DOMAIN-SUFFIX,example.com</code>、<code>IP-CIDR,1.2.3.4/32,no-resolve</code>。保存后调用容器内 <code>mihomo-reload</code> 立即生效，不用重启。</p>
+    <div class="tabs">
+      <button id="tabDirect" class="on" onclick="loadRules('direct')">直连（不走代理）</button>
+      <button id="tabProxy" onclick="loadRules('proxy')">强制走代理</button>
+    </div>
+    <textarea id="rules" spellcheck="false"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" onclick="saveRules()" id="btnRules">保存并生效</button>
+    </div>
+    <div class="msg" id="rulesMsg"></div>
+  </section>
+
+  <!-- 日志 -->
+  <section class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2>📜 容器日志</h2>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="logAuto"> 自动刷新</label>
+        <button onclick="loadLogs()">刷新</button>
+      </div>
+    </div>
+    <pre class="console" id="logs" style="margin-top:12px">点「刷新」查看最近 300 行日志。</pre>
+  </section>
+</main>
+
+<dialog id="jobDlg">
+  <div class="head"><span id="jobSpin" class="spin"></span><h3 id="jobTitle">任务</h3><span class="pill" id="jobPill">进行中</span></div>
+  <div class="body">
+    <div class="msg info" id="jobHint"></div>
+    <pre class="console" id="jobOut"></pre>
+  </div>
+  <div class="foot"><button id="jobClose" onclick="closeJob()">在后台运行</button></div>
+</dialog>
+
+<script>
+const $ = id => document.getElementById(id);
+const S = { status: null, ll: null, rules: 'direct' };
+const LL_INTRO = $('llBody').innerHTML;
+
+async function api(path, body) {
+  const opt = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Panel': '1' }, body: JSON.stringify(body) };
+  const res = await fetch('/api' + path, opt);
+  let data = {};
+  try { data = await res.json(); } catch {}
+  if (!res.ok) throw new Error(data.error || ('请求失败 ' + res.status));
+  return data;
+}
+function msg(el, text, kind) { el.className = 'msg show ' + kind; el.textContent = text; }
+function pill(el, text, kind) { el.className = 'pill ' + (kind || ''); el.textContent = text; }
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function stripAnsi(s) { return s.replace(/\x1b\[[0-9;?]*[ -\/]*[@-~]/g, '').replace(/\x1b\][^\x07]*\x07/g, '').replace(/\r(?!\n)/g, '\n'); }
+// 把终端颜色（SGR）转成 HTML，IPQuality 的报告依赖颜色区分好坏
+const ANSI16 = ['#4b5563','#ef4444','#22c55e','#eab308','#3b82f6','#d946ef','#06b6d4','#e5e7eb','#9ca3af','#f87171','#4ade80','#facc15','#60a5fa','#e879f9','#22d3ee','#ffffff'];
+function xterm256(n) {
+  if (n < 16) return ANSI16[n];
+  if (n >= 232) { const v = 8 + (n - 232) * 10; return 'rgb(' + v + ',' + v + ',' + v + ')'; }
+  n -= 16; const c = x => x ? x * 40 + 55 : 0;
+  return 'rgb(' + c(Math.floor(n / 36)) + ',' + c(Math.floor(n / 6) % 6) + ',' + c(n % 6) + ')';
+}
+function ansiToHtml(raw) {
+  raw = raw.replace(/\x1b\][^\x07]*\x07/g, '').replace(/\x1b\[[0-9;?]*[A-HJKSTfhlr]/g, '').replace(/\r(?!\n)/g, '\n');
+  let out = '', st = {}, open = false;
+  const parts = raw.split(/\x1b\[([0-9;]*)m/);
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 0) { out += esc(parts[i]); continue; }
+    const codes = parts[i] === '' ? [0] : parts[i].split(';').map(Number);
+    for (let j = 0; j < codes.length; j++) {
+      const c = codes[j];
+      if (c === 0) st = {};
+      else if (c === 1) st.b = 1;
+      else if (c === 4) st.u = 1;
+      else if (c === 22) delete st.b;
+      else if (c === 39) delete st.fg;
+      else if (c === 49) delete st.bg;
+      else if (c >= 30 && c <= 37) st.fg = ANSI16[c - 30];
+      else if (c >= 90 && c <= 97) st.fg = ANSI16[c - 82];
+      else if (c >= 40 && c <= 47) st.bg = ANSI16[c - 40];
+      else if (c >= 100 && c <= 107) st.bg = ANSI16[c - 92];
+      else if ((c === 38 || c === 48) && codes[j + 1] === 5) { st[c === 38 ? 'fg' : 'bg'] = xterm256(codes[j + 2]); j += 2; }
+      else if ((c === 38 || c === 48) && codes[j + 1] === 2) { st[c === 38 ? 'fg' : 'bg'] = 'rgb(' + codes.slice(j + 2, j + 5).join(',') + ')'; j += 4; }
+    }
+    if (open) { out += '</span>'; open = false; }
+    const css = (st.fg ? 'color:' + st.fg + ';' : '') + (st.bg ? 'background:' + st.bg + ';' : '') + (st.b ? 'font-weight:700;' : '') + (st.u ? 'text-decoration:underline;' : '');
+    if (css) { out += '<span style="' + css + '">'; open = true; }
+  }
+  return out + (open ? '</span>' : '');
+}
+function confirmAct(text, fn) { if (confirm(text)) fn(); }
+
+// ---------- 状态 ----------
+async function refresh() {
+  let st;
+  try { st = await api('/status'); } catch (e) {
+    $('projectDir').textContent = '面板已关闭或无法连接，请重新打开面板程序';
+    return;
+  }
+  S.status = st;
+  $('projectDir').textContent = '项目目录：' + st.projectDir + (st.version !== 'dev' ? ' · v' + st.version : '');
+  const d = st.docker, c = st.container;
+  const banner = $('dockerBanner');
+  if (!d.installed) {
+    banner.innerHTML = '没有检测到 Docker。请先安装 <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">Docker Desktop</a>（Windows / macOS），Linux 安装 docker-ce，装好后刷新本页。';
+    banner.classList.add('show');
+  } else if (!d.running) {
+    banner.innerHTML = 'Docker 已安装，但没有运行。请打开 Docker Desktop（或执行 <code>sudo systemctl start docker</code>），等它启动完成后本页会自动刷新。' + (d.error ? '<br><span style="opacity:.75">' + esc(d.error) + '</span>' : '');
+    banner.classList.add('show');
+  } else banner.classList.remove('show');
+
+  $('stDocker').innerHTML = d.running ? '<span class="pill ok">运行中 ' + esc(d.version) + '</span>' : d.installed ? '<span class="pill bad">未运行</span>' : '<span class="pill bad">未安装</span>';
+  $('stConfig').innerHTML = st.configured ? '<span class="pill ok">已配置</span>' : '<span class="pill warn">请填写代理</span>';
+
+  let ct = ['未创建', ''];
+  if (c && c.exists) ct = c.running ? ['运行中', 'ok'] : c.restarting ? ['反复重启中', 'bad'] : [c.state === 'exited' ? '已停止' : c.state, 'warn'];
+  if (!d.running) ct = ['—', ''];
+  $('stContainer').innerHTML = '<span class="pill ' + ct[1] + '">' + esc(ct[0]) + '</span>';
+  pill($('ctPill'), ct[0], ct[1]);
+  const running = !!(c && c.running);
+  $('ctDesc').textContent = c && c.restarting
+    ? '容器在反复重启，通常是代理地址/端口填错了。看看下面的日志，修改代理设置后点「保存并应用」。'
+    : c && c.exists ? '镜像：' + c.image + (running && c.startedAt ? ' · 启动于 ' + new Date(c.startedAt).toLocaleString() : '')
+    : '还没有创建容器。填好代理设置后点「启动」，第一次需要下载镜像，大约几分钟。';
+  const busy = !!st.activeJob;
+  $('btnStart').disabled = !d.running || busy || running;
+  $('btnStart').textContent = c && c.exists ? '▶ 启动' : '▶ 创建并启动';
+  $('btnStop').disabled = !running || busy;
+  $('btnRestart').disabled = !(c && c.exists) || busy;
+  $('btnUpdate').disabled = !d.running || busy || !st.configured;
+  $('btnNet').disabled = !running;
+  $('btnIPQ').disabled = !running;
+  $('ipqHint').textContent = running ? '' : '容器运行后才能检测。';
+
+  if (running) refreshLooklook(); else renderLooklook(null);
+}
+
+async function refreshLooklook() {
+  try { renderLooklook(await api('/looklook')); } catch { renderLooklook(null); }
+}
+
+function renderLooklook(ll) {
+  S.ll = ll;
+  const running = S.status && S.status.container && S.status.container.running;
+  const body = $('llBody');
+  if (!running || !ll) {
+    $('stLooklook').innerHTML = '<span class="pill">等待容器启动</span>';
+    setHTML(body, LL_INTRO);
+    return;
+  }
+
+  if (!ll.available) {
+    $('stLooklook').innerHTML = '<span class="pill bad">不可用</span>';
+    setHTML(body, '<div class="muted">容器里没有找到 Looklook 客户端，试试「更新」容器。</div>');
+    return;
+  }
+  const remoteOk = /connected/i.test(ll.remote || '') && !/not|dis/i.test(ll.remote || '');
+  $('stLooklook').innerHTML = !ll.running ? '<span class="pill warn">客户端未运行</span>'
+    : !ll.signedIn ? '<span class="pill warn">未登录</span>'
+    : remoteOk ? '<span class="pill ok">已就绪</span>' : '<span class="pill warn">远程连接中</span>';
+  const link = u => '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(u) + '</a>';
+  const row = (k, v) => '<div><span>' + k + '</span><span>' + v + '</span></div>';
+  let html = '';
+  if (ll.signedIn && ll.address) {
+    html += '<div class="big">在手机或任意浏览器打开专属地址就能写代码</div>' +
+      '<div class="row" style="margin:10px 0 14px"><span class="addr">' + esc(ll.address) + '</span>' +
+      '<button onclick="copyText(\'' + esc(ll.address) + '\')">复制</button>' +
+      '<a href="' + esc(ll.address) + '" target="_blank" rel="noopener"><button class="primary">打开</button></a></div>';
+  } else if (!ll.signedIn) {
+    html += '<div class="big">还没有登录 Looklook</div><p class="muted">打开下面的「本机管理台」，按提示登录即可（手机上批准）。还没有账号？去 <a href="https://looklook.dev/" target="_blank" rel="noopener">looklook.dev</a> 注册。</p>';
+  }
+  html += '<div class="results">' +
+    row('客户端', esc(ll.version || '—') + (ll.running ? '（运行中）' : '（未运行）')) +
+    (ll.signedIn ? row('账号', esc(ll.account)) + row('远程访问', esc(ll.remote || '—')) : '') +
+    row('本机管理台', link(ll.localUrl)) +
+    row('局域网访问', ll.lanOn
+      ? '<span class="pill ok">已开启</span> <button class="link" onclick="llAction(\'lan-off\')">关闭</button>'
+      : '<span class="pill warn">已关闭</span> <button class="link" onclick="llAction(\'lan-on\')">开启</button>') +
+    (ll.lanOn && ll.lanUrls && ll.lanUrls.length ? row('局域网地址', ll.lanUrls.map(link).join('<br>')) : '') +
+    '</div>' +
+    '<details style="margin-top:10px"><summary>looklook status 原始输出</summary><pre class="console" style="margin-top:8px">' + esc(ll.raw) + '</pre></details>';
+  setHTML(body, html);
+}
+function setHTML(el, html) { if (el._html !== html) { el.innerHTML = html; el._html = html; } }
+
+function copyText(t) {
+  navigator.clipboard?.writeText(t).then(() => toastBtn('已复制'), () => prompt('复制下面的地址：', t));
+}
+function toastBtn(t) { const b = document.activeElement; if (b && b.tagName === 'BUTTON') { const o = b.textContent; b.textContent = t; setTimeout(() => b.textContent = o, 1200); } }
+
+// ---------- 代理 ----------
+async function loadConfig() {
+  try {
+    const c = await api('/config');
+    $('cfServer').value = c.server || ''; $('cfPort').value = c.port || '';
+    $('cfUser').value = c.username || ''; $('cfPass').value = c.password || '';
+    $('cfRepair').checked = c.repairAuto; $('cfInterval').value = c.repairIntervalMin; $('cfLL').checked = c.looklookAutostart;
+  } catch (e) { msg($('cfMsg'), e.message, 'bad'); }
+}
+function formConfig() {
+  return { server: $('cfServer').value.trim(), port: parseInt($('cfPort').value, 10) || 0, username: $('cfUser').value, password: $('cfPass').value,
+    repairAuto: $('cfRepair').checked, repairIntervalMin: parseInt($('cfInterval').value, 10) || 60, looklookAutostart: $('cfLL').checked };
+}
+async function testProxy() {
+  const b = $('btnTest'); b.disabled = true; msg($('cfMsg'), '正在测试…', 'info');
+  try {
+    const r = await api('/proxy/test', formConfig());
+    msg($('cfMsg'), (r.ok ? '✅ 代理可用，访问外网耗时 ' + r.ms + ' ms' : '❌ ' + r.error) + (r.note ? '\n' + r.note : ''), r.ok ? 'ok' : 'bad');
+  } catch (e) { msg($('cfMsg'), '❌ ' + e.message, 'bad'); }
+  b.disabled = false;
+}
+async function saveConfig() {
+  const b = $('btnSave'); b.disabled = true;
+  try {
+    const r = await api('/config', formConfig());
+    $('cfServer').value = r.server; $('cfPort').value = r.port;
+    const c = S.status && S.status.container;
+    if (c && c.exists) {
+      msg($('cfMsg'), '已保存，正在用新配置重建容器（代码和登录状态会保留）…', 'ok');
+      await runJob('/container/apply');
+    } else msg($('cfMsg'), '✅ 已保存。下一步：点右边的「创建并启动」。', 'ok');
+  } catch (e) { msg($('cfMsg'), '❌ ' + e.message, 'bad'); }
+  b.disabled = false; refresh();
+}
+
+// ---------- 容器 ----------
+async function containerAction(a) { await runJob('/container/' + a); }
+async function networkCheck() {
+  const b = $('btnNet'); b.disabled = true;
+  $('netResults').innerHTML = '<div><span class="muted">检测中，最多约 15 秒…</span><span class="spin"></span></div>';
+  try {
+    const r = await api('/network/check', {});
+    $('netResults').innerHTML = r.ok
+      ? '<div><span>网络</span><span class="pill ok">已连通</span></div>' +
+        '<div><span>出口 IP</span><strong>' + esc(r.ip) + '</strong></div>' +
+        '<div><span>结果来源</span><span class="muted">' + esc(r.source) + ' · ' + r.ms + ' ms</span></div>'
+      : '<div><span>网络</span><span class="pill bad">不通</span></div>' +
+        '<div class="muted" style="display:block">所有检测站点都失败了，请先在「代理设置」点「测试连接」确认代理可用。<br>' + (r.errors || []).map(esc).join('<br>') + '</div>';
+  } catch (e) { $('netResults').innerHTML = '<div><span class="pill bad">' + esc(e.message) + '</span></div>'; }
+  b.disabled = false;
+}
+function ipQuality() { runJob('/ipquality', {}, '检测期间请勿关闭面板。结果以彩色报告形式显示在下面。'); }
+
+// ---------- 规则 ----------
+async function loadRules(name) {
+  S.rules = name;
+  $('tabDirect').classList.toggle('on', name === 'direct'); $('tabProxy').classList.toggle('on', name === 'proxy');
+  $('rulesMsg').className = 'msg';
+  try { $('rules').value = (await api('/rules/' + name)).content; } catch (e) { msg($('rulesMsg'), e.message, 'bad'); }
+}
+async function saveRules() {
+  const b = $('btnRules'); b.disabled = true;
+  try {
+    const r = await api('/rules/' + S.rules, { content: $('rules').value });
+    let t = '✅ 已保存';
+    if (r.reloaded === true) t += '，已立即生效';
+    else if (r.reloaded === false) t += '，但热加载失败（规则可能写错了）：\n' + (r.reloadOutput || '');
+    else t += '，容器启动后生效';
+    msg($('rulesMsg'), t, r.reloaded === false ? 'bad' : 'ok');
+  } catch (e) { msg($('rulesMsg'), '❌ ' + e.message, 'bad'); }
+  b.disabled = false;
+}
+
+// ---------- Looklook ----------
+function llAction(a) { runJob('/looklook/' + a).then(refreshLooklook); }
+
+// ---------- 日志 ----------
+async function loadLogs() {
+  const el = $('logs');
+  try {
+    const r = await api('/logs?tail=300');
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
+    el.textContent = stripAnsi(r.logs) || '（暂无日志）';
+    if (atBottom) el.scrollTop = el.scrollHeight;
+  } catch (e) { el.textContent = e.message; }
+}
+
+// ---------- 任务弹窗 ----------
+let jobTimer = null;
+async function runJob(path, body = {}, hint = '') {
+  let r;
+  try { r = await api(path, body); } catch (e) { alert(e.message); return; }
+  return watchJob(r.job, hint);
+}
+function watchJob(id, hint) {
+  return new Promise(resolve => {
+    const dlg = $('jobDlg'); let offset = 0;
+    $('jobOut').textContent = ''; $('jobTitle').textContent = '任务';
+    $('jobHint').textContent = hint; $('jobHint').classList.toggle('show', !!hint);
+    $('jobSpin').style.display = ''; pill($('jobPill'), '进行中', 'warn'); $('jobClose').textContent = '在后台运行';
+    if (!dlg.open) dlg.showModal();
+    clearInterval(jobTimer);
+    const tick = async () => {
+      let s;
+      try { s = await api('/jobs/' + id + '?offset=' + offset); } catch { return; }
+      $('jobTitle').textContent = s.title;
+      if (s.output) {
+        const out = $('jobOut');
+        // 链接可点击（Looklook 登录时会给出批准地址）
+        out.insertAdjacentHTML('beforeend', ansiToHtml(s.output).replace(/https?:\/\/[^\s<>"'）)]+/g, u => '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>'));
+        out.scrollTop = out.scrollHeight;
+      }
+      offset = s.offset;
+      if (!s.running) {
+        clearInterval(jobTimer);
+        $('jobSpin').style.display = 'none';
+        const ok = s.exitCode === 0 && !s.error;
+        pill($('jobPill'), ok ? '完成' : '失败', ok ? 'ok' : 'bad');
+        if (!ok) $('jobOut').textContent += '\n✖ ' + (s.error || '退出码 ' + s.exitCode) + '\n';
+        $('jobClose').textContent = '关闭';
+        $('jobHint').classList.remove('show');
+        refresh();
+        resolve(ok);
+      }
+    };
+    jobTimer = setInterval(tick, 800); tick();
+  });
+}
+function closeJob() { $('jobDlg').close(); refresh(); }
+
+// ---------- 启动 ----------
+loadConfig(); loadRules('direct'); refresh();
+setInterval(() => { if (!document.hidden && !$('jobDlg').open) refresh(); }, 5000);
+setInterval(() => { if (!document.hidden && $('logAuto').checked) loadLogs(); }, 3000);
+</script>
+</body>
+</html>

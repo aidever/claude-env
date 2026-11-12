@@ -123,4 +123,19 @@ environment_repair_scheduler() {
 
 environment_repair_scheduler
 
+# Start the Looklook client in the background (login state lives in the mounted
+# data directory, so it survives container recreation). Wait a moment so the
+# Mihomo TUN is up first, and skip the proxy env vars: Looklook traffic is
+# routed directly by the rules above.
+looklook_autostart() {
+  [ "${LOOKLOOK_AUTOSTART:-1}" = "1" ] || return 0
+  (
+    sleep 3
+    cd /workspace
+    exec env -u http_proxy -u https_proxy -u all_proxy looklook run --no-browser >>/tmp/looklook.log 2>&1
+  ) &
+}
+
+looklook_autostart
+
 exec mihomo -d /etc/mihomo

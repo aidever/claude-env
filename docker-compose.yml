@@ -6,6 +6,8 @@ services:
     cap_add: [NET_ADMIN, NET_RAW]
     devices:
       - /dev/net/tun:/dev/net/tun
+    extra_hosts:
+      - host.docker.internal:host-gateway
     environment:
       SOCKS_SERVER: ${SOCKS_SERVER}
       SOCKS_PORT: ${SOCKS_PORT}
@@ -13,7 +15,13 @@ services:
       SOCKS_PASSWORD: ${SOCKS_PASSWORD:-}
       ENVIRONMENT_REPAIR_AUTO_APPLY: ${ENVIRONMENT_REPAIR_AUTO_APPLY:-1}
       ENVIRONMENT_REPAIR_INTERVAL: ${ENVIRONMENT_REPAIR_INTERVAL:-3600}
+      LOOKLOOK_AUTOSTART: ${LOOKLOOK_AUTOSTART:-1}
+      # 管理台固定监听 1234，发布到宿主机，局域网设备才能访问
+      LOOKLOOK_LISTEN: 0.0.0.0:1234
+    ports:
+      - ${LOOKLOOK_PORT:-1234}:1234
     volumes:
       - ./workspace:/workspace
       - ./mihomo-rules:/etc/mihomo/custom
+      - ./looklook-data:/root/.local/share/looklook
     restart: unless-stopped

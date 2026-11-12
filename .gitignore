@@ -3,3 +3,7 @@
 *.key
 *.gz
 remote-setup.sh
+workspace/
+mihomo-rules/
+looklook-data/
+panel/dist/
