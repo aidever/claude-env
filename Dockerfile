@@ -1,6 +1,7 @@
 FROM ubuntu:24.04
 
 ARG MIHOMO_VERSION=v1.19.20
+ARG TARGETARCH
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LOOKLOOK_PREFIX=/opt/looklook
 # Keep Looklook's download/extraction staging area on the same filesystem as
@@ -18,7 +19,7 @@ RUN export TMPDIR=/tmp TMP=/tmp TEMP=/tmp && \
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y --no-install-recommends nodejs && \
     npm install -g @anthropic-ai/claude-code @openai/codex && \
-    arch="amd64" && curl -fsSL "https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VERSION}/mihomo-linux-${arch}-${MIHOMO_VERSION}.gz" -o /tmp/mihomo.gz && \
+    arch="${TARGETARCH}" && curl -fsSL "https://github.com/MetaCubeX/mihomo/releases/download/${MIHOMO_VERSION}/mihomo-linux-${arch}-${MIHOMO_VERSION}.gz" -o /tmp/mihomo.gz && \
     gunzip /tmp/mihomo.gz && install -m 0755 /tmp/mihomo /usr/local/bin/mihomo && rm -f /tmp/mihomo && \
     export TMPDIR=/opt/looklook/.tmp TMP=/opt/looklook/.tmp TEMP=/opt/looklook/.tmp && \
     mkdir -p /opt/looklook/.tmp && \
