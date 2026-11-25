@@ -114,6 +114,13 @@ export all_proxy="${ALL_PROXY:-socks5://127.0.0.1:7890}"
 environment_repair_scheduler() {
   [ "${ENVIRONMENT_REPAIR_AUTO_APPLY:-1}" = "1" ] || return 0
   (
+    # Wait for Mihomo proxy to listen so IP-based timezone detection succeeds immediately
+    for _ in $(seq 1 30); do
+      if (echo >/dev/tcp/127.0.0.1/7890) 2>/dev/null; then
+        break
+      fi
+      sleep 1
+    done
     while :; do
       /usr/local/bin/environment-repair.sh >/tmp/environment-repair.log 2>&1 || true
       sleep "${ENVIRONMENT_REPAIR_INTERVAL:-3600}"

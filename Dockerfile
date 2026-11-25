@@ -3,6 +3,7 @@ FROM ubuntu:24.04
 ARG MIHOMO_VERSION=v1.19.20
 ARG TARGETARCH
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 ENV LOOKLOOK_PREFIX=/opt/looklook
 # Keep Looklook's download/extraction staging area on the same filesystem as
 # its install prefix.  Its updater renames the extracted `fonts` directory;
@@ -24,8 +25,6 @@ RUN export TMPDIR=/tmp TMP=/tmp TEMP=/tmp && \
     export TMPDIR=/opt/looklook/.tmp TMP=/opt/looklook/.tmp TEMP=/opt/looklook/.tmp && \
     mkdir -p /opt/looklook/.tmp && \
     curl -fsSL https://looklook.dev/install.sh | sh && \
-    git clone --depth 1 https://github.com/yiancode/fuck-claude.git /opt/fuck-claude && \
-    mkdir -p /opt/looklook/.tmp && \
     rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
