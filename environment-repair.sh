@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -u
 
-if [ -x /opt/fuck-claude/bin/apply-docker.sh ]; then
-  /opt/fuck-claude/bin/apply-docker.sh || true
+if [ -x /opt/fuck-claude/bin/apply.sh ]; then
+  /opt/fuck-claude/bin/apply.sh || true
 fi
 
 # Apply the location-based timezone last; the repair script has its own
